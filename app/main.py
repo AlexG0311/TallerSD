@@ -96,7 +96,7 @@ def start_process(request: ProcessRequest, background_tasks: BackgroundTasks):
         "resize_errors": 0,
         "formats": [],
         "format_errors": 0,
-        "watermarks": [],        #   ← nuevo
+        "watermarks": [],        #    ← nuevo
         "watermark_errors": 0   # ← nuevo
     }
 

@@ -49,11 +49,11 @@ class WatermarkWorker(threading.Thread):
                     # Dibujar texto con transparencia
                     draw.text((x, y), texto, font=font, fill=(255, 255, 255, 128))
 
-                    # Combinar imagen original con marca de agua
+                    # Combinar imagen origina l con marca de agua
                     combined = Image.alpha_composite(img, watermark_layer)
                     final_img = combined.convert("RGB")
 
-                    # Guardar con sufijo _marca_agua
+                    # Guardar con   sufijo _marca_agua
                     base = os.path.splitext(os.path.basename(image_path))[0]
                     output_dir = os.path.dirname(image_path)
                     new_filename = os.path.join(output_dir, f"{base}_marca_agua.png")
