@@ -5,6 +5,7 @@ from app.models.request_models import ProcessRequest
 from app.services.download_service import start_download_stage
 from app.services.resize_service import start_resize_stage
 from app.services.format_service import start_format_stage
+from app.services.watermark_service import start_watermark_stage
 import os
 
 app = FastAPI()
@@ -17,10 +18,10 @@ def root():
     return {"message": "PMIC Backend funcionando correctamente"}
 
 
-# 🔹 FUNCIÓN QUE CORRE EN SEGUNDO PLANO
 def run_full_process(request: ProcessRequest, process_id: str):
 
     try:
+        # 🔹 ETAPA 1: Descarga
         start_download_stage(
             urls=request.urls,
             num_workers=request.workers.descarga,
@@ -28,12 +29,12 @@ def run_full_process(request: ProcessRequest, process_id: str):
             process_store=process_store
         )
 
-        # Obtener rutas de archivos descargados
         downloaded_paths = [
             os.path.join("storage/downloads", d["filename"])
             for d in process_store[process_id]["downloads"]
         ]
 
+        # 🔹 ETAPA 2: Redimensionamiento
         start_resize_stage(
             image_paths=downloaded_paths,
             num_workers=request.workers.redimension,
@@ -41,16 +42,30 @@ def run_full_process(request: ProcessRequest, process_id: str):
             process_store=process_store
         )
 
-        # Obtener rutas de imágenes redimensionadas
         resized_paths = [
             os.path.join("storage/downloads", r["resized_image"])
             for r in process_store[process_id]["resizes"]
             if "resized_image" in r
         ]
 
+        # 🔹 ETAPA 3: Conversión de Formato
         start_format_stage(
             image_paths=resized_paths,
             num_workers=request.workers.formato,
+            process_id=process_id,
+            process_store=process_store
+        )
+
+        formatted_paths = [
+            os.path.join("storage/downloads", f["converted_image"])
+            for f in process_store[process_id]["formats"]
+            if "converted_image" in f
+        ]
+
+        # 🔹 ETAPA 4: Marca de Agua
+        start_watermark_stage(
+            image_paths=formatted_paths,
+            num_workers=request.workers.marca_agua,
             process_id=process_id,
             process_store=process_store
         )
@@ -65,7 +80,6 @@ def run_full_process(request: ProcessRequest, process_id: str):
         process_store[process_id]["end_time"] = datetime.now()
 
 
-# 🔹 ENDPOINT POST (AHORA NO BLOQUEA)
 @app.post("/process")
 def start_process(request: ProcessRequest, background_tasks: BackgroundTasks):
 
@@ -81,15 +95,12 @@ def start_process(request: ProcessRequest, background_tasks: BackgroundTasks):
         "resizes": [],
         "resize_errors": 0,
         "formats": [],
-        "format_errors": 0
+        "format_errors": 0,
+        "watermarks": [],        # ← nuevo
+        "watermark_errors": 0   # ← nuevo
     }
 
-    # Aquí lanzamos el proceso en background
-    background_tasks.add_task(
-        run_full_process,
-        request,
-        process_id
-    )
+    background_tasks.add_task(run_full_process, request, process_id)
 
     return {
         "process_id": process_id,
