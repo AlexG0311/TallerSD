@@ -4,6 +4,7 @@ import time
 from queue import Queue
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
+from app.database import SessionLocal, MarcaAgua
 
 
 class WatermarkWorker(threading.Thread):
@@ -71,7 +72,20 @@ class WatermarkWorker(threading.Thread):
                 }
 
                 self.process_store[self.process_id]["watermarks"].append(metadata)
-                print(f"[{self.name}] ✅ Marca de agua aplicada: {new_filename}")
+
+                #  Guardar en DB
+                db = SessionLocal()
+                db.add(MarcaAgua(
+                    process_id             = self.process_id,
+                    original_image         = metadata["original_image"],
+                    watermarked_image      = metadata["watermarked_image"],
+                    watermark_time_seconds = metadata["watermark_time_seconds"],
+                    worker_name            = self.name,
+                    timestamp              = datetime.now()
+                ))
+                db.commit()
+                db.close()
+                print(f"[{self.name}]  Marca de agua aplicada: {new_filename}")
 
             except Exception as e:
                 self.process_store[self.process_id]["watermark_errors"] += 1
@@ -81,7 +95,17 @@ class WatermarkWorker(threading.Thread):
                     "worker_name": self.name,
                     "timestamp": datetime.now().isoformat()
                 })
-                print(f"[{self.name}] ❌ Error: {e}")
+                db = SessionLocal()
+                db.add(MarcaAgua(
+                    process_id     = self.process_id,
+                    original_image = os.path.basename(image_path),
+                    worker_name    = self.name,
+                    error          = str(e),
+                    timestamp      = datetime.now()
+                ))
+                db.commit()
+                db.close()
+                print(f"[{self.name}]  Error: {e}")
 
             finally:
                 self.queue.task_done()

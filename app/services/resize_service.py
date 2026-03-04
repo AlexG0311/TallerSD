@@ -4,6 +4,7 @@ import threading
 from queue import Queue
 from datetime import datetime
 from PIL import Image
+from app.database import SessionLocal, Resize
 
 
 NUEVO_ANCHO_DEFAULT = 800
@@ -59,11 +60,40 @@ class ResizeWorker(threading.Thread):
 
                 self.process_store[self.process_id]["resizes"].append(metadata)
 
+                #  Guardar en DB
+                db = SessionLocal()
+                db.add(Resize(
+                    process_id          = self.process_id,
+                    original_image      = metadata["original_image"],
+                    resized_image       = metadata["resized_image"],
+                    resize_time_seconds = metadata["resize_time_seconds"],
+                    worker_name         = self.name,
+                    timestamp           = datetime.now()
+                ))
+                db.commit()
+                db.close()
+
                 print(f"[{self.name}] Redimensión exitosa: {nuevo_ancho}x{nuevo_alto}")
 
             except Exception as e:
                 print(f"[{self.name}] ERROR resize: {e}")
                 self.process_store[self.process_id]["resize_errors"] += 1
+                self.process_store[self.process_id]["resizes"].append({
+                    "original_image": os.path.basename(image_path),
+                    "error": str(e),
+                    "worker_name": self.name,
+                    "timestamp": datetime.now().isoformat()
+                })
+                db = SessionLocal()
+                db.add(Resize(
+                    process_id  = self.process_id,
+                    original_image = os.path.basename(image_path),
+                    worker_name = self.name,
+                    error       = str(e),
+                    timestamp   = datetime.now()
+                ))
+                db.commit()
+                db.close()
 
             finally:
                 self.queue.task_done()

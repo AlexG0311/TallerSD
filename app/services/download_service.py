@@ -4,6 +4,7 @@ import threading
 import requests
 from queue import Queue
 from datetime import datetime
+from app.database import SessionLocal, Descarga
 
 
 class DownloadWorker(threading.Thread):
@@ -14,16 +15,15 @@ class DownloadWorker(threading.Thread):
         self.process_id = process_id
         self.process_store = process_store
 
-    def run(self):   # 👈 AHORA SÍ dentro de la clase
+    def run(self):
         while True:
             try:
                 url = self.queue.get_nowait()
             except:
                 break
 
-            print(f"[{self.name}] Descargando: {url}")
-
             start_time = time.time()
+            db = SessionLocal()
 
             try:
                 response = requests.get(url, timeout=10)
@@ -31,31 +31,56 @@ class DownloadWorker(threading.Thread):
 
                 filename = f"{self.name}_{int(time.time())}.jpg"
                 filepath = os.path.join("storage/downloads", filename)
-
                 with open(filepath, "wb") as f:
                     f.write(response.content)
 
-                end_time = time.time()
-
+                elapsed = round(time.time() - start_time, 4)
                 file_size_mb = round(os.path.getsize(filepath) / (1024 * 1024), 4)
 
                 metadata = {
                     "filename": filename,
-                    "download_time_seconds": round(end_time - start_time, 4),
+                    "url": url,
                     "file_size_mb": file_size_mb,
+                    "download_time_seconds": elapsed,
                     "worker_name": self.name,
-                    "timestamp": datetime.now()
+                    "timestamp": datetime.now().isoformat()
                 }
 
                 self.process_store[self.process_id]["downloads"].append(metadata)
 
-                print(f"[{self.name}] Descarga exitosa")
+                #  Guarda en SQLite
+                db.add(Descarga(
+                    process_id            = self.process_id,
+                    filename              = filename,
+                    url                   = url,
+                    file_size_mb          = file_size_mb,
+                    download_time_seconds = elapsed,
+                    worker_name           = self.name,
+                    timestamp             = datetime.now()
+                ))
+                db.commit()
 
             except Exception as e:
-                print(f"[{self.name}] ERROR: {e}")
                 self.process_store[self.process_id]["download_errors"] += 1
+                self.process_store[self.process_id]["downloads"].append({
+                    "url": url,
+                    "error": str(e),
+                    "worker_name": self.name,
+                    "timestamp": datetime.now().isoformat()
+                })
+
+                #  Guarda el error en SQLite
+                db.add(Descarga(
+                    process_id  = self.process_id,
+                    url         = url,
+                    worker_name = self.name,
+                    error       = str(e),
+                    timestamp   = datetime.now()
+                ))
+                db.commit()
 
             finally:
+                db.close()
                 self.queue.task_done()
 
 

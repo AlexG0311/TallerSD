@@ -4,6 +4,7 @@ import threading
 from queue import Queue
 from datetime import datetime
 from PIL import Image
+from app.database import SessionLocal, Formato
 
 
 class FormatWorker(threading.Thread):
@@ -73,11 +74,42 @@ class FormatWorker(threading.Thread):
 
                 self.process_store[self.process_id]["formats"].append(metadata)
 
+                #  Guardar en DB
+                db = SessionLocal()
+                db.add(Formato(
+                    process_id          = self.process_id,
+                    original_image      = metadata["original_image"],
+                    converted_image     = metadata["converted_image"],
+                    formato_original    = metadata["formato_original"],
+                    formato_nuevo       = metadata["formato_nuevo"],
+                    format_time_seconds = metadata["format_time_seconds"],
+                    worker_name         = self.name,
+                    timestamp           = datetime.now()
+                ))
+                db.commit()
+                db.close()
+
                 print(f"[{self.name}] Conversión exitosa: {os.path.basename(new_filename)}")
 
             except Exception as e:
                 print(f"[{self.name}] ERROR formato: {e}")
                 self.process_store[self.process_id]["format_errors"] += 1
+                self.process_store[self.process_id]["formats"].append({
+                    "original_image": os.path.basename(image_path),
+                    "error": str(e),
+                    "worker_name": self.name,
+                    "timestamp": datetime.now().isoformat()
+                })
+                db = SessionLocal()
+                db.add(Formato(
+                    process_id     = self.process_id,
+                    original_image = os.path.basename(image_path),
+                    worker_name    = self.name,
+                    error          = str(e),
+                    timestamp      = datetime.now()
+                ))
+                db.commit()
+                db.close()
 
             finally:
                 self.queue.task_done()
