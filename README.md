@@ -7,18 +7,14 @@ python -m venv venv
 # 3. Activarlo
 venv\Scripts\activate
 
-
-
 # 4. Instalar dependencias
 pip install -r requirements.txt
 
-
-# 4. Instalar SqlLite
+# Instalar SqlLite
 pip install sqlalchemy
 
-
-
-# Actualizar requirements.txt
+# Actualizar requirements.txt cuando se agreguen otras depe
 pip freeze > requirements.txt
 
+# Levantar el entorno
 uvicorn app.main:app --reload
