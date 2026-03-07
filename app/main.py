@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 from uuid import uuid4
 from datetime import datetime
 from app.models.request_models import ProcessRequest
@@ -9,7 +10,18 @@ from app.services.watermark_service import start_watermark_stage
 from app.database import init_db, SessionLocal, Proceso
 import os
 
+
 app = FastAPI()
+
+# Configuración de CORS para permitir el frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Cambia esto si tu frontend usa otro puerto/origen
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 process_store = {}
 
 # Inicializa la DB al arrancar
