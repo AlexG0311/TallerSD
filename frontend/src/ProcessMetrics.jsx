@@ -1,4 +1,9 @@
 import { useState } from 'react';
+import { LuSearch } from "react-icons/lu";
+import { IoMdDownload, IoIosWater  } from "react-icons/io";
+import { FcSalesPerformance } from "react-icons/fc";
+import { ImImages } from "react-icons/im";
+
 
 function ProcessMetrics() {
   const [processId, setProcessId] = useState('');
@@ -55,7 +60,7 @@ function ProcessMetrics() {
   // Badge de estado
   const StatusBadge = ({ status }) => {
     let color = '#6366f1', bg = '#eef2ff', icon = '⏳';
-    if (status === 'COMPLETADO') { color = '#10b981'; bg = '#ecfdf5'; icon = '✅'; }
+    if (status === 'COMPLETADO') { color = '#10b981'; bg = '#ecfdf5'; icon = ''; }
     else if (status === 'COMPLETADO_CON_ERRORES') { color = '#f59e42'; bg = '#fff7ed'; icon = '⚠️'; }
     else if (status === 'FALLIDO') { color = '#ef4444'; bg = '#fef2f2'; icon = '❌'; }
     return (
@@ -69,16 +74,15 @@ function ProcessMetrics() {
 
   // Íconos para etapas
   const etapaIcon = {
-    descarga: '⬇️',
-    redimension: '📐',
-    formato: '🖼️',
-    marca_agua: '💧',
+    descarga: <IoMdDownload/>,
+    redimension: <FcSalesPerformance/>,
+    formato: <ImImages/>,
+    marca_agua: <IoIosWater/>,
   };
 
   return (
     <div style={{
-      maxWidth: 750,
-      margin: '2.5rem auto',
+      maxWidth: '100%',
       padding: '2.5rem 2rem',
       background: 'linear-gradient(135deg, #f0fdfa 0%, #e0e7ff 100%)',
       borderRadius: 22,
@@ -89,8 +93,8 @@ function ProcessMetrics() {
       overflow: 'hidden',
     }}>
       {/* Círculos decorativos */}
-      <div style={{position: 'absolute', top: -60, right: -60, width: 160, height: 160, background: 'radial-gradient(circle, #6366f1 0%, #e0e7ff 80%)', opacity: 0.13, borderRadius: '50%', zIndex: 0}} />
-      <div style={{position: 'absolute', bottom: -50, left: -50, width: 120, height: 120, background: 'radial-gradient(circle, #06b6d4 0%, #f0fdfa 80%)', opacity: 0.13, borderRadius: '50%', zIndex: 0}} />
+      <div style={{position: 'absolute', top: -60, right: -60, width: 160, height: 160, background: 'radial-gradient(circle, #e3e3e3 0%, #e0e7ff 80%)', opacity: 0.13, borderRadius: '50%', zIndex: 0}} />
+      <div style={{position: 'absolute', bottom: -50, left: -50, width: 120, height: 120, background: 'radial-gradient(circle, #bcbcbc 0%, #f0fdfa 80%)', opacity: 0.13, borderRadius: '50%', zIndex: 0}} />
       <h2 style={{
         textAlign: 'center',
         color: '#2d3a4a',
@@ -102,7 +106,7 @@ function ProcessMetrics() {
         position: 'relative',
         textShadow: '0 2px 8px #e0e7ff',
       }}>
-        <span style={{color: '#6366f1'}}>Consulta de Estado</span> y Métricas
+        <span style={{color: '#000000'}}>Consulta de Estado</span> y Métricas
       </h2>
       <form
         onSubmit={handleSubmit}
@@ -120,7 +124,7 @@ function ProcessMetrics() {
           position: 'relative',
         }}
       >
-        <span style={{fontSize: 22, color: '#6366f1', marginRight: 4}}>🔎</span>
+        <span style={{fontSize: 22, color: '#0b0b0b', marginRight: 4}}><LuSearch/></span>
         <input
           type="text"
           placeholder="ID de procesamiento"
@@ -129,7 +133,7 @@ function ProcessMetrics() {
           style={{
             padding: '0.8rem 1.1rem',
             width: 320,
-            border: '1.5px solid #6366f1',
+            border: '1.5px solid #909090',
             borderRadius: 9,
             fontSize: 17,
             outline: 'none',
@@ -142,7 +146,7 @@ function ProcessMetrics() {
           type="submit"
           style={{
             padding: '0.8rem 1.7rem',
-            background: 'linear-gradient(90deg, #6366f1 0%, #06b6d4 100%)',
+            background: 'linear-gradient(90deg, #313131 0%, #101010 100%)',
             color: '#fff',
             border: 'none',
             borderRadius: 9,
@@ -155,7 +159,7 @@ function ProcessMetrics() {
             display: 'flex', alignItems: 'center', gap: 7
           }}
         >
-          <span style={{fontSize: 19}}>🚀</span> Consultar
+          <span style={{fontSize: 19}}></span> Consultar
         </button>
       </form>
       {loading && <Spinner />}

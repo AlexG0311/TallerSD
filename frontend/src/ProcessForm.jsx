@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 
 const defaultWorkers = {
   descarga: 8,
@@ -6,7 +6,6 @@ const defaultWorkers = {
   formato: 4,
   marca_agua: 4,
 };
-
 
 export default function ProcessForm() {
   const [urls, setUrls] = useState('');
@@ -57,7 +56,7 @@ export default function ProcessForm() {
   const Spinner = () => (
     <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '1.5rem 0'}}>
       <div style={{
-        width: 36, height: 36, border: '4px solid #6366f1', borderTop: '4px solid #06b6d4', borderRadius: '50%',
+        width: 36, height: 36, border: '4px solid #ffffff', borderTop: '4px solid #000000', borderRadius: '50%',
         animation: 'spin 1s linear infinite',
       }} />
       <style>{`@keyframes spin { 0% { transform: rotate(0deg);} 100% {transform: rotate(360deg);} }`}</style>
@@ -68,19 +67,18 @@ export default function ProcessForm() {
     <div style={{
       maxWidth: 480,
       margin: '0 auto',
-      padding: '2.5rem 2rem',
+      padding: '',
       background: 'linear-gradient(135deg, #f0fdfa 0%, #e0e7ff 100%)',
       borderRadius: 22,
       boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
-      border: '1.5px solid #e0e7ff',
+      border: '1.5px solid #ffffff',
       fontFamily: 'Segoe UI, sans-serif',
       position: 'relative',
-      overflow: 'hidden',
-      minWidth: 320,
+      overflow: 'hidden', 
     }}>
       {/* Círculos decorativos */}
-      <div style={{position: 'absolute', top: -60, right: -60, width: 160, height: 160, background: 'radial-gradient(circle, #6366f1 0%, #e0e7ff 80%)', opacity: 0.13, borderRadius: '50%', zIndex: 0}} />
-      <div style={{position: 'absolute', bottom: -50, left: -50, width: 120, height: 120, background: 'radial-gradient(circle, #06b6d4 0%, #f0fdfa 80%)', opacity: 0.13, borderRadius: '50%', zIndex: 0}} />
+      <div style={{position: 'absolute', top: -60, right: -60, width: 160, height: 160, opacity: 0.13, borderRadius: '50%', zIndex: 0}} />
+      <div style={{position: 'absolute', bottom: -50, left: -50, width: 120, height: 120, opacity: 0.13, borderRadius: '50%', zIndex: 0}} />
       <h2 style={{
         textAlign: 'center',
         color: '#2d3a4a',
@@ -92,26 +90,28 @@ export default function ProcessForm() {
         position: 'relative',
         textShadow: '0 2px 8px #e0e7ff',
       }}>
-        <span style={{color: '#6366f1'}}>Procesar</span> Imágenes
+        <span style={{color: '#000000'}}>Procesar</span> Imágenes
       </h2>
       <form onSubmit={handleSubmit} style={{
         background: '#fff',
-        borderRadius: 14,
+        width: '400px',
+        borderRadius: 10,
         boxShadow: '0 2px 12px 0 rgba(99,102,241,0.10)',
-        padding: '1.3rem 1.1rem',
+        padding: '20px 20px',
         zIndex: 1,
+        margin: '20px 20px',
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
-        gap: 18,
+        gap: 20,
       }}>
-        <label style={{fontWeight: 600, color: '#6366f1', fontSize: 16, marginBottom: 2}}>
+        <label style={{fontWeight: 600, color: '#0a0a0a', fontSize: 16, marginBottom: 2}}>
           URLs de imágenes
           <textarea
             value={urls}
             onChange={(e) => setUrls(e.target.value)}
             rows={5}
-            style={{ width: '100%', marginTop: 6, marginBottom: 8, borderRadius: 8, border: '1.5px solid #6366f1', padding: 8, fontSize: 15, outline: 'none', resize: 'vertical' }}
+            style={{ width: '100%', marginTop: 6, marginBottom: 8, borderRadius: 8, border: '1.5px solid #000000', padding: 0, fontSize: 15, outline: 'none', resize: 'vertical' }}
             placeholder="https://ejemplo.com/imagen1.jpg, https://ejemplo.com/imagen2.jpg"
           />
         </label>
@@ -133,7 +133,7 @@ export default function ProcessForm() {
         <button type="submit" disabled={loading} style={{
           width: '100%',
           padding: '0.8rem 0',
-          background: 'linear-gradient(90deg, #6366f1 0%, #06b6d4 100%)',
+          background: 'linear-gradient(90deg, #000000 0%, #000000 100%)',
           color: '#fff',
           border: 'none',
           borderRadius: 9,

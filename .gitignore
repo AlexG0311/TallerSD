@@ -56,3 +56,13 @@ Thumbs.db
 
 
 html/
+
+# =========================
+# Frontend (Vite + React)
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+frontend/.env
+frontend/.env.*

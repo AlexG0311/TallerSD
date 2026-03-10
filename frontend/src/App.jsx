@@ -1,5 +1,3 @@
-import './App.css'
-
 import ProcessMetrics from './ProcessMetrics'
 import ProcessForm from './ProcessForm'
 
@@ -11,7 +9,7 @@ function App() {
       justifyContent: 'center',
       alignItems: 'flex-start',
       gap: 32,
-      padding: '2.5rem 0',
+      padding: '2.5rem 30px',
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #f0fdfa 0%, #e0e7ff 100%)',
     }}>
