@@ -29,7 +29,7 @@ function ProcessMetrics() {
     setLoading(true);
     setData(null);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/process/${processId}`);
+      const res = await fetch(`/process/${processId}`);
       if (!res.ok) throw new Error('No se encontró el proceso');
       const json = await res.json();
       setData(json);
