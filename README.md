@@ -10,14 +10,18 @@ venv\Scripts\activate
 # 4. Instalar dependencias
 pip install -r requirements.txt
 
-# Instalar SqlLite
+# 5 Levantar el entorno
+uvicorn app.main:app --reload
+
+# Instalar SqlLite 
 pip install sqlalchemy
 
 # Actualizar requirements.txt cuando se agreguen otras depe
 pip freeze > requirements.txt
 
-# Levantar el entorno
-uvicorn app.main:app --reload
+## Diagramas
+
+![Arquitectura del sistema](doc/diagramas/arquitectura_sistema.jpeg)
+![Arquitectura de software](doc/diagramas/arquitectura_software.png)
 
 
-![alt text](<arquitectura de software.png>) ![alt text](<arquitectura del sistema_.jpeg>)
