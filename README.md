@@ -19,9 +19,4 @@ pip install sqlalchemy
 # Actualizar requirements.txt cuando se agreguen otras depe
 pip freeze > requirements.txt
 
-## Diagramas
-
-![Arquitectura del sistema](doc/diagramas/arquitectura_sistema.jpeg)
-![Arquitectura de software](doc/diagramas/arquitectura_software.png)
-
 
