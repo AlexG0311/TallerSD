@@ -18,3 +18,6 @@ pip freeze > requirements.txt
 
 # Levantar el entorno
 uvicorn app.main:app --reload
+
+
+![alt text](<arquitectura de software.png>) ![alt text](<arquitectura del sistema_.jpeg>)
