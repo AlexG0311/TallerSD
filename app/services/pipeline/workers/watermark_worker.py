@@ -3,6 +3,7 @@ import time
 import threading
 
 from datetime import datetime
+from queue import Empty
 from PIL import Image, ImageDraw, ImageFont
 
 from app.database import SessionLocal, MarcaAgua
@@ -20,7 +21,7 @@ class WatermarkWorker(threading.Thread):
         while True:
             try:
                 image_path = self.queue.get_nowait()
-            except:
+            except Empty:
                 break
 
             print(f"[{self.name}] Aplicando marca de agua: {image_path}")
@@ -28,7 +29,6 @@ class WatermarkWorker(threading.Thread):
 
             try:
                 with Image.open(image_path).convert("RGBA") as img:
-
                     watermark_layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
                     draw = ImageDraw.Draw(watermark_layer)
 
@@ -55,13 +55,13 @@ class WatermarkWorker(threading.Thread):
                     new_filename = os.path.join(output_dir, f"{base}_marca_agua.png")
                     final_img.save(new_filename, format="PNG")
 
-                end_time = time.time()
+                elapsed = round(time.time() - start_time, 4)
 
                 metadata = {
                     "original_image": os.path.basename(image_path),
                     "watermarked_image": os.path.basename(new_filename),
                     "texto_marca_agua": texto,
-                    "watermark_time_seconds": round(end_time - start_time, 4),
+                    "watermark_time_seconds": elapsed,
                     "worker_name": self.name,
                     "timestamp": datetime.now().isoformat(),
                 }
@@ -81,9 +81,10 @@ class WatermarkWorker(threading.Thread):
                 )
                 db.commit()
                 db.close()
-                print(f"[{self.name}]  Marca de agua aplicada: {new_filename}")
+                print(f"[{self.name}] Marca de agua aplicada: {new_filename}")
 
             except Exception as e:
+                print(f"[{self.name}] ERROR watermark: {e}")
                 self.process_store[self.process_id]["watermark_errors"] += 1
                 self.process_store[self.process_id]["watermarks"].append(
                     {
@@ -105,7 +106,6 @@ class WatermarkWorker(threading.Thread):
                 )
                 db.commit()
                 db.close()
-                print(f"[{self.name}]  Error: {e}")
 
             finally:
                 self.queue.task_done()

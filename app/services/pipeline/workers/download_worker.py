@@ -4,6 +4,7 @@ import threading
 
 import requests
 from datetime import datetime
+from queue import Empty
 
 from app.database import SessionLocal, Descarga
 
@@ -20,7 +21,7 @@ class DownloadWorker(threading.Thread):
         while True:
             try:
                 url = self.queue.get_nowait()
-            except:
+            except Empty:
                 break
 
             start_time = time.time()

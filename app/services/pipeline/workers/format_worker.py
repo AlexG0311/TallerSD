@@ -3,6 +3,7 @@ import time
 import threading
 
 from datetime import datetime
+from queue import Empty
 from PIL import Image
 
 from app.database import SessionLocal, Formato
@@ -20,21 +21,19 @@ class FormatWorker(threading.Thread):
         while True:
             try:
                 image_path = self.queue.get_nowait()
-            except:
+            except Empty:
                 break
 
             print(f"[{self.name}] Convirtiendo formato: {image_path}")
-
             start_time = time.time()
 
             try:
                 with Image.open(image_path) as img:
-
                     formato_original = img.format if img.format else "UNKNOWN"
 
                     if formato_original == "PNG":
                         print(f"[{self.name}] Ya es PNG, se omite: {image_path}")
-                        end_time = time.time()
+                        elapsed = round(time.time() - start_time, 4)
                         self.process_store[self.process_id]["formats"].append(
                             {
                                 "original_image": os.path.basename(image_path),
@@ -42,55 +41,52 @@ class FormatWorker(threading.Thread):
                                 "formato_original": formato_original,
                                 "formato_nuevo": "PNG",
                                 "conversion_realizada": False,
-                                "format_time_seconds": round(end_time - start_time, 4),
+                                "format_time_seconds": elapsed,
                                 "worker_name": self.name,
                                 "timestamp": datetime.now().isoformat(),
                             }
                         )
-                        continue
-
-                    base = os.path.splitext(image_path)[0]
-                    new_filename = f"{base}_formato_cambiado.png"
-
-                    if img.mode in ("RGBA", "P"):
-                        img = img.convert("RGBA")
                     else:
-                        img = img.convert("RGB")
+                        base = os.path.splitext(image_path)[0]
+                        new_filename = f"{base}_formato_cambiado.png"
 
-                    img.save(new_filename, format="PNG")
+                        if img.mode in ("RGBA", "P"):
+                            img = img.convert("RGBA")
+                        else:
+                            img = img.convert("RGB")
 
-                end_time = time.time()
+                        img.save(new_filename, format="PNG")
+                        elapsed = round(time.time() - start_time, 4)
 
-                metadata = {
-                    "original_image": os.path.basename(image_path),
-                    "converted_image": os.path.basename(new_filename),
-                    "formato_original": formato_original,
-                    "formato_nuevo": "PNG",
-                    "conversion_realizada": True,
-                    "format_time_seconds": round(end_time - start_time, 4),
-                    "worker_name": self.name,
-                    "timestamp": datetime.now().isoformat(),
-                }
+                        metadata = {
+                            "original_image": os.path.basename(image_path),
+                            "converted_image": os.path.basename(new_filename),
+                            "formato_original": formato_original,
+                            "formato_nuevo": "PNG",
+                            "conversion_realizada": True,
+                            "format_time_seconds": elapsed,
+                            "worker_name": self.name,
+                            "timestamp": datetime.now().isoformat(),
+                        }
 
-                self.process_store[self.process_id]["formats"].append(metadata)
+                        self.process_store[self.process_id]["formats"].append(metadata)
 
-                db = SessionLocal()
-                db.add(
-                    Formato(
-                        process_id=self.process_id,
-                        original_image=metadata["original_image"],
-                        converted_image=metadata["converted_image"],
-                        formato_original=metadata["formato_original"],
-                        formato_nuevo=metadata["formato_nuevo"],
-                        format_time_seconds=metadata["format_time_seconds"],
-                        worker_name=self.name,
-                        timestamp=datetime.now(),
-                    )
-                )
-                db.commit()
-                db.close()
-
-                print(f"[{self.name}] Conversión exitosa: {os.path.basename(new_filename)}")
+                        db = SessionLocal()
+                        db.add(
+                            Formato(
+                                process_id=self.process_id,
+                                original_image=metadata["original_image"],
+                                converted_image=metadata["converted_image"],
+                                formato_original=metadata["formato_original"],
+                                formato_nuevo=metadata["formato_nuevo"],
+                                format_time_seconds=metadata["format_time_seconds"],
+                                worker_name=self.name,
+                                timestamp=datetime.now(),
+                            )
+                        )
+                        db.commit()
+                        db.close()
+                        print(f"[{self.name}] Conversión exitosa: {os.path.basename(new_filename)}")
 
             except Exception as e:
                 print(f"[{self.name}] ERROR formato: {e}")

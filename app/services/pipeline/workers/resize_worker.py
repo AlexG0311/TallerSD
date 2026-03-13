@@ -3,6 +3,7 @@ import time
 import threading
 
 from datetime import datetime
+from queue import Empty
 from PIL import Image
 
 from app.database import SessionLocal, Resize
@@ -24,16 +25,14 @@ class ResizeWorker(threading.Thread):
         while True:
             try:
                 image_path = self.queue.get_nowait()
-            except:
+            except Empty:
                 break
 
             print(f"[{self.name}] Redimensionando: {image_path}")
-
             start_time = time.time()
 
             try:
                 with Image.open(image_path) as img:
-
                     ancho_original, alto_original = img.size
 
                     nuevo_ancho = self.nuevo_ancho
@@ -46,14 +45,14 @@ class ResizeWorker(threading.Thread):
 
                     resized_img.save(new_filename)
 
-                end_time = time.time()
+                elapsed = round(time.time() - start_time, 4)
 
                 metadata = {
                     "original_image": os.path.basename(image_path),
                     "resized_image": os.path.basename(new_filename),
                     "dimensiones_originales": f"{ancho_original}x{alto_original}",
                     "dimensiones_nuevas": f"{nuevo_ancho}x{nuevo_alto}",
-                    "resize_time_seconds": round(end_time - start_time, 4),
+                    "resize_time_seconds": elapsed,
                     "worker_name": self.name,
                     "timestamp": datetime.now().isoformat(),
                 }
@@ -73,7 +72,6 @@ class ResizeWorker(threading.Thread):
                 )
                 db.commit()
                 db.close()
-
                 print(f"[{self.name}] Redimensión exitosa: {nuevo_ancho}x{nuevo_alto}")
 
             except Exception as e:
